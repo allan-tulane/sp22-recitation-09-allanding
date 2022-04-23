@@ -1,5 +1,5 @@
-from collections import deque
 from heapq import heappush, heappop 
+from collections import deque
 
 def shortest_shortest_path(graph, source):
     """
@@ -13,7 +13,27 @@ def shortest_shortest_path(graph, source):
       (shortest path weight, shortest path number of edges). See test case for example.
     """
     ### TODO
-    pass
+    def shortest_shortest_path_helper(visited, frontier):
+        if len(frontier) == 0:
+            return visited
+        else:
+            # Pick next closest node from heap
+            distance_weight, distance_edges, node = heappop(frontier)
+            print('visiting', node)
+            if node in visited:
+                return shortest_shortest_path_helper(visited, frontier)
+            else:
+                visited[node] = (distance_weight, distance_edges)
+                print('...distance_weight=', distance_weight, ' distance_edges', distance_edges)
+                for neighbor, weight in graph[node]:
+                    heappush(frontier, (distance_weight + weight, distance_edges + 1, neighbor))                
+                return shortest_shortest_path_helper(visited, frontier)
+        
+    frontier = []
+    heappush(frontier, (0, 0, source))
+    visited = dict()  # store the final shortest paths for each node.
+    return shortest_shortest_path_helper(visited, frontier)
+    ###
     
 def test_shortest_shortest_path():
 
@@ -33,7 +53,10 @@ def test_shortest_shortest_path():
     assert result['c'] == (4,1)
     assert result['d'] == (7,2)
     
-    
+test_shortest_shortest_path()
+
+## BFS 
+
 def bfs_path(graph, source):
     """
     Returns:
@@ -41,7 +64,24 @@ def bfs_path(graph, source):
       that vertex in the shortest path tree.
     """
     ###TODO
-    pass
+    def bfs_path_helper(visited, frontier, parents):
+        if len(frontier) == 0:
+            return parents
+        else:
+            node = frontier.popleft()
+            visited.add(node)
+            for n in graph[node]:
+                if n not in visited and n not in frontier:
+                    parents[n] = node
+                    frontier.append(n)
+            return bfs_path_helper(visited, frontier, parents)
+
+    parents = dict()
+    frontier = deque()
+    frontier.append(source)
+    visited = set()
+    return bfs_path_helper(visited, frontier, parents)
+    ###
 
 def get_sample_graph():
      return {'s': {'a', 'b'},
@@ -66,9 +106,18 @@ def get_path(parents, destination):
       (excluding the destination node itself). See test_get_path for an example.
     """
     ###TODO
-    pass
+    if destination in parents:
+        return get_path(parents, parents[destination]) + parents[destination]
+    else:
+        return ''
+    ###
 
 def test_get_path():
     graph = get_sample_graph()
     parents = bfs_path(graph, 's')
     assert get_path(parents, 'd') == 'sbc'
+    
+test_bfs_path()
+test_get_path()
+
+# # print_path(parents, 'd')
